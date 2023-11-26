@@ -83,6 +83,11 @@ class Acoes(Fornecedores):
 class RequestHandler(BaseHTTPRequestHandler):
     acao = Acoes()
 
+    def set_headers(self):
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+
     def do_POST(self):
         url = urlparse(self.path)
         content_length = int(self.headers['Content-Length'])
@@ -133,7 +138,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             case '/api/v1/fornecedor':
                 try:
                     data = json.loads(body)
-                    response = f'{self.acao.pesquisa_fornecedor(nome=data["nome"], estado=data["estado"])}'
+                    resultado = self.acao.pesquisa_fornecedor(nome=data["nome"], estado=data["estado"])
+                    response = resultado.to_json(orient='records')
                 except ValueError as error:
                     response = f'Error: {error}'
                     self.send_response(404)
@@ -149,14 +155,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                     self.send_response(404)
             case _:
                 self.send_response(404)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
+                self.set_headers()
                 self.wfile.write('NOT FOUND'.encode('utf-8'))
                 return
 
         self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
+        self.set_headers()
         self.wfile.write(response.encode('utf-8'))
 
     def do_GET(self):
@@ -175,12 +179,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                     response = f'Error: {error}'
             case _:
                 self.send_response(404)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
+                self.set_headers()
                 self.wfile.write('NOT FOUND'.encode('utf-8'))
                 return
 
         self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
+        self.set_headers()
         self.wfile.write(response.encode('utf-8'))
