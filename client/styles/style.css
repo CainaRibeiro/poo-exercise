@@ -43,18 +43,16 @@ body {
     padding: 50px;
 }
 
-.buttons1 {
+.buttons1, .buttons2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    
+    color: black;
+    font-weight: bold;
 }
 
-.buttons2 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
+.button1:visited, .button2:visited {
+    color: black;
 }
 
 .button {
@@ -212,10 +210,6 @@ select {
     outline: none;
 }
 
-.search:focus {
-    border: solid 1px #F5D215;
-}
-
 #linksite {
     font-size: 10px;
 }
@@ -252,6 +246,9 @@ select {
     font-weight: bold;
 }
 
-.main-list {
-
+.error {
+    color: red;
+    font-size: 15px;
+    font-weight: bold;
+    margin: 5px;
 }

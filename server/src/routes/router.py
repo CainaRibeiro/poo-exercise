@@ -77,7 +77,7 @@ class Acoes(Fornecedores):
 
     def calcula_frete(self, nome, distancia):
         preco_km = self.excel.loc[self.excel['Nome'] == nome.lower(), 'Preco_km'].iloc[0]
-        return f'{distancia * preco_km}'
+        return int(distancia) * int(preco_km)
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -107,21 +107,38 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                    email=data["email"],
                                                    telefone=data["telefone"])
 
-                    response = f'Dados recebidos: {data["nome"]}'
+                    response_data = {
+                        "mensagem": f'Dados recebidos: {data["nome"]}'
+                    }
+                    response = json.dumps(response_data)
                     self.send_response(201)
                 except ValueError as error:
-                    response = f'Error: {error}'
+                    error_data = {
+                        "Error": str(error)
+                    }
+                    response = json.dumps(error_data)
                     self.send_response(404)
 
             case '/api/v1/add_avaliacao':
                 try:
                     data = json.loads(body)
-                    if not data["nome"] or not data["avaliacao"]:
-                        raise ValueError("Faltando dado(s) obrigatório(s)")
+                    if not data["nome"]:
+                        raise ValueError("Nome da transportadora é obrigatório")
+                    if not data["avaliacao"]:
+                        raise ValueError("Avaliação é obrigatória")
+                    if int(data["avaliacao"]) > 10 or int(data["avaliacao"]) < 0:
+                        raise ValueError("A avaliação deve ser entre 0 e 10")
                     self.acao.aplicar_avaliacao(nome=data["nome"], avaliacao=data["avaliacao"])
-                    response = f'Avaliacao adicionada {data["nome"]}: {data["avaliacao"]}'
+                    response_data = {
+                        "mensagem": f'Avaliação adicionada {data["nome"]}: {data["avaliacao"]}'
+                    }
+                    self.send_response(200)
+                    response = json.dumps(response_data)
                 except ValueError as error:
-                    response = f'Error: {error}'
+                    error_data = {
+                        "Error": str(error)
+                    }
+                    response = json.dumps(error_data)
                     self.send_response(404)
 
             case '/api/v1/remover_fornecedor':
@@ -130,18 +147,29 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if not data["nome"]:
                         raise ValueError("Campo nome é obrigatório para remoção de fornecedor")
                     self.acao.remover_fornecedor(nome=data["nome"])
-                    response = f'Fornecedor removido: {data["nome"]}'
+                    response_data = {
+                        "mensagem": f'Fornecedor removido: {data["nome"]}'
+                    }
+                    self.send_response(200)
+                    response = json.dumps(response_data)
                 except ValueError as error:
-                    response = f'Error: {error}'
+                    error_data = {
+                        "Error": str(error)
+                    }
+                    response = json.dumps(error_data)
                     self.send_response(404)
 
             case '/api/v1/fornecedor':
                 try:
                     data = json.loads(body)
                     resultado = self.acao.pesquisa_fornecedor(nome=data["nome"], estado=data["estado"])
+                    self.send_response(200)
                     response = resultado.to_json(orient='records')
                 except ValueError as error:
-                    response = f'Error: {error}'
+                    error_data = {
+                        "Error": str(error)
+                    }
+                    response = json.dumps(error_data)
                     self.send_response(404)
 
             case '/api/v1/calcula-frete':
@@ -149,9 +177,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                     data = json.loads(body)
                     if not data["nome"] or not data["distancia"]:
                         raise ValueError("Dados faltando")
-                    response = f'{self.acao.calcula_frete(nome=data["nome"], distancia=data["distancia"])}'
+                    valor = self.acao.calcula_frete(nome=data["nome"], distancia=data["distancia"])
+                    response_data = {
+                        "mensagem": f'O valor do frete será: R$ {round(valor, 2):.2f}'
+                    }
+                    self.send_response(200)
+                    response = json.dumps(response_data)
                 except ValueError as error:
-                    response = f'Error: {error}'
+                    error_data = {
+                        "Error": str(error)
+                    }
+                    response = json.dumps(error_data)
                     self.send_response(404)
             case _:
                 self.send_response(404)
@@ -159,7 +195,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write('NOT FOUND'.encode('utf-8'))
                 return
 
-        self.send_response(200)
         self.set_headers()
         self.wfile.write(response.encode('utf-8'))
 
@@ -173,16 +208,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if fornecedores_df.empty:
                         raise ValueError('Excel vazio')
                     fornecedores_list = fornecedores_df.to_dict(orient='records')
+                    self.send_response(200)
                     response = json.dumps(fornecedores_list)
                 except Exception as error:
-                    print(error)
-                    response = f'Error: {error}'
+                    error_data = {
+                        "Error": str(error)
+                    }
+                    response = json.dumps(error_data)
             case _:
                 self.send_response(404)
                 self.set_headers()
                 self.wfile.write('NOT FOUND'.encode('utf-8'))
                 return
 
-        self.send_response(200)
         self.set_headers()
         self.wfile.write(response.encode('utf-8'))

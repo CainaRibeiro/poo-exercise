@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles/style.css">
+    <title>Transportes Saquarema Ltda.</title>
+</head>
+<body>
+    <header>
+        <div class="header"><a href="../index.html"><img src="../images/icon.png" class="icon" alt="icone"></a><a href="../index.html"><span class="title1">Transportes Saquarema Ltda.</span></a><span class="title2">Encontre seu fornecedor de transporte ideal!</span></div>
+    </header>
+    <main class="maincalc">
+        <p class="title3">Avalie um de nossos fornecedores!</p>
+        <div class="calcfrete">
+            <p class="transp">
+                <label for="ichoice">Transportadora:</label>
+                <select id="ichoice" name="transportadora">
+                    <option>--- Selecione uma transportadora ---</option>
+                </select>
+            </p>
+            <p>
+                <span class="dist">
+                    <label for="igrade">Nota:</label>
+                    <input id="igrade" class="field" type="number" placeholder="Dê uma nota de 0 a 10" min="0" max="10">
+                </span>
+                <div>
+                    <button id="send" style="margin-left: 15px">Avaliar</button>
+                </div>
+        </div>
+        <div class="result error" id="error"></div>
+        <div class="result" id="result"></div>
+    </main>
+</body>
+<script>
+    const apiUrl = 'http://localhost:8000/api/v1';
+    const sendButton = document.querySelector('#send');
+    let data;
+    let sendedData;
+    document.addEventListener('DOMContentLoaded', async () => {
+        const response = await fetch(`${apiUrl}/fornecedores`)
+        data = await response.json()
+
+        const select = document.querySelector('#ichoice')
+
+        data.forEach((item) => {
+            const newOption = document.createElement('option');
+
+            select.append(newOption);
+            newOption.textContent = `${item.Nome}`
+        });
+    })
+
+    sendButton.addEventListener('click', async () => {
+        const errorMsg = document.querySelector('#error')
+        try {
+            const transportadora = document.querySelector('#ichoice').value
+            const nota = document.querySelector('#igrade').value
+            const result = document.querySelector('#result')
+            const body = {
+                nome: transportadora,
+                avaliacao: nota
+            }
+            const param = {
+                method: 'POST',
+                body: JSON.stringify(body)
+            }
+
+            const response = await fetch(`${apiUrl}/add_avaliacao`, param)
+            sendedData = await response.json()
+
+            if (response.ok && (nota <= 10 || nota >= 0) ) {
+                errorMsg.textContent = ''
+                result.textContent = `${sendedData.mensagem}`;
+            } else {
+                errorMsg.textContent = `${sendedData.Error}`
+            }
+        } catch (error) {
+            errorMsg.textContent = `${error}`
+        }
+    })
+</script>
+</html>
