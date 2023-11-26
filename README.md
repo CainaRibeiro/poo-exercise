@@ -1,4 +1,3 @@
-# poo-exercise
 
 # Manual de uso
 
