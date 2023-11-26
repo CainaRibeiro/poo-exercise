@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/style.css">
+    <title>Transportes Saquarema Ltda.</title>
+</head>
+<body>
+    <header>
+        <div class="header"><a href="index.html"><img src="images/icon.png" class="icon" alt="icone"></a><a href="index.html"><span class="title1">Transportes Saquarema Ltda.</span></a><span class="title2">Encontre seu fornecedor de transporte ideal!</span></div>
+    </header>
+    <main>
+        <div class="title3">Cadastre um Fornecedor</div>
+
+        <div class="tabela">
+            <form class="form" action="" method="post" id="myForm">
+                <p class="data">
+                <label for="iname">Nome:</label>
+                <input class="field" type="text" id="nome" name="name" required minlenght="1" maxlenght="65" size="65">
+                </p>
+                <p class="data">
+                    <label for="istate">Estado:</label>
+                    <select name="estado" id="istate">
+                        <option value="" selected></option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                </p>
+                <p class="data">
+                    <label for="iprice">Preço por KM:</label>
+                    <input class="field" type="number" id="preco" name="name" required minlenght="1" maxlenght="65" size="65">
+                </p>
+                <p class="data">
+                    <label for="imail">E-mail:</label>
+                    <input class="field" type="email" id="email" name="name" required minlenght="1" maxlenght="65" size="65">
+                </p>
+                <p class="data">
+                    <label for="iphone">Telefone:</label>
+                    <input class="field" type="number" id="telefone" name="name" required minlenght="1" maxlenght="65" size="65">
+                </p>
+                <p id="buttons">
+                    <input id="send" type="submit" value="Salvar">
+                    <input id="reset" type="reset" value="Cancelar">
+                </p>
+            </form>
+        </div>
+    </main>
+</body>
+<script>
+    const apiUrl = 'http://localhost:8000/api/v1';
+
+    document.querySelector('#myForm').addEventListener('submit', async (event) => {
+        event.preventDefault()
+        const nome = document.querySelector('#nome').value;
+        const estado = document.querySelector('#istate').value;
+        const preco = document.querySelector('#preco').value
+        const email = document.querySelector('#email').value
+        const telefone = document.querySelector('#telefone').value
+
+        const body = {
+            nome,
+            estado,
+            preco_km: preco,
+            email,
+            telefone
+        }
+
+        const param = {
+            method: 'POST',
+            body: JSON.stringify(body)
+        }
+        await fetch(`${apiUrl}/add_fornecedor`, param)
+            .then(async (response) => {
+                if (response.ok) {
+                    alert(`${body.nome} cadastrado com sucesso!`);
+                    document.querySelector('#nome').value = '';
+                    document.querySelector('#istate').value = '';
+                    document.querySelector('#preco').value = '';
+                    document.querySelector('#email').value = '';
+                    document.querySelector('#telefone').value = '';
+                } else {
+                    throw new Error(`${body.nome} já está cadastrado`);
+                }
+            })
+            .catch((error) => {
+                alert(`Erro: ${error.message}`);
+            });
+    })
+</script>
+</html>
