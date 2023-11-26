@@ -50,10 +50,10 @@ class Acoes(Fornecedores):
             print(f'O fornecedor {nome} não está cadastrado.')
             raise ValueError('Fornecedor não cadastrado')
 
-    def pesquisa_fornecedores(self):
+    def lista_fornecedores(self):
         return self.excel
 
-    def pesquisa_fornecedor(self, nome=None, estado=None):
+    def filtra_fornecedores(self, nome=None, estado=None):
         if nome or estado:
             conditions = []
             if nome:
@@ -162,7 +162,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             case '/api/v1/fornecedor':
                 try:
                     data = json.loads(body)
-                    resultado = self.acao.pesquisa_fornecedor(nome=data["nome"], estado=data["estado"])
+                    resultado = self.acao.filtra_fornecedores(nome=data["nome"], estado=data["estado"])
                     self.send_response(200)
                     response = resultado.to_json(orient='records')
                 except ValueError as error:
@@ -204,7 +204,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         match url.path:
             case '/api/v1/fornecedores':
                 try:
-                    fornecedores_df = self.acao.pesquisa_fornecedores()
+                    fornecedores_df = self.acao.lista_fornecedores()
                     if fornecedores_df.empty:
                         raise ValueError('Excel vazio')
                     fornecedores_list = fornecedores_df.to_dict(orient='records')
